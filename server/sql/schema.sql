@@ -1,0 +1,58 @@
+CREATE DATABASE IF NOT EXISTS virtual_queue_db;
+USE virtual_queue_db;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  mobile VARCHAR(15),
+  password VARCHAR(255) NOT NULL,
+  role ENUM('USER', 'EMPLOYEE', 'ADMIN') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE employees (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  employee_name VARCHAR(100),
+  avg_service_time INT DEFAULT 10,
+  is_active BOOLEAN DEFAULT TRUE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  token_number INT NOT NULL,
+  user_id INT NOT NULL,
+  employee_id INT NOT NULL,
+  status ENUM('WAITING', 'SERVING', 'SERVED') DEFAULT 'WAITING',
+  queue_position INT,
+  estimated_time INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (employee_id) REFERENCES employees(id)
+);
+
+CREATE TABLE logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  action VARCHAR(100),
+  performed_by INT,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+/*
+CREATE TABLE settings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  key_name VARCHAR(100) UNIQUE NOT NULL,
+  value VARCHAR(255) NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE TABLE notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+); 
+*/
