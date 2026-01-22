@@ -2,16 +2,13 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-/*
-=================================================
-REGISTER USER
-=================================================
-*/
+// This API is only for USER registration
 exports.register = (req, res) => {
-  const { name, email, phone, password, role } = req.body;
+const { name, email, mobile, password } = req.body;
 
+const role = "USER";
   // 1. Validation
-  if (!name || !email || !phone || !password) {
+  if (!name || !email || !mobile || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -20,17 +17,17 @@ exports.register = (req, res) => {
 
   // 3. Insert user
   const sql =
-    "INSERT INTO users (name, email, phone, password, role) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO users (name, email, mobile, password, role) VALUES (?, ?, ?, ?, ?)";
 
   db.query(
     sql,
-    [name, email, phone, hashedPassword, role || "USER"],
+    [name, email, mobile, hashedPassword, role],
     (err) => {
       if (err) {
         console.error(err);
         return res
           .status(400)
-          .json({ message: "Email or phone already exists" });
+          .json({ message: "Email or mobile already exists" });
       }
 
       res.status(201).json({
@@ -40,11 +37,9 @@ exports.register = (req, res) => {
   );
 };
 
-/*
-=================================================
-LOGIN USER
-=================================================
-*/
+
+// LOGIN USER
+
 exports.login = (req, res) => {
   const { email, password } = req.body;
 
@@ -84,7 +79,7 @@ exports.login = (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        mobile: user.mobile,
         role: user.role,
       },
     });
