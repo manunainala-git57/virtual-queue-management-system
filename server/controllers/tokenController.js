@@ -123,3 +123,115 @@ exports.takeToken = (req, res) => {
     });
   });
 };
+
+// SERVE TOKEN (EMPLOYEE)
+
+exports.serveToken = (req, res) => {
+  const tokenId = req.params.tokenId;
+  const employeeUserId = req.user.id;
+
+  // Find employee_id linked to logged-in employee
+  const employeeSql = `
+    SELECT id FROM employees WHERE user_id = ?
+  `;
+
+  db.query(employeeSql, [employeeUserId], (err, empResult) => {
+    if (err) {
+      console.error("Employee fetch error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (empResult.length === 0) {
+      return res.status(403).json({ message: "Not an employee" });
+    }
+
+    const employeeId = empResult[0].id;
+
+    //Fetch token to be served
+    const tokenSql = `
+      SELECT id, employee_id, queue_position
+      FROM tokens
+      WHERE id = ? AND status = 'WAITING'
+    `;
+
+    db.query(tokenSql, [tokenId], (err, tokenResult) => {
+      if (err) {
+        console.error("Token fetch error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      if (tokenResult.length === 0) {
+        return res.status(404).json({ message: "Token not found or already served" });
+      }
+
+      const token = tokenResult[0];
+      /*
+        tokenResult = [
+                {
+                    id: 1,
+                    employee_id: 3,
+                    queue_position: 1
+                }
+            ];
+        token = tokenResult[0];
+      */
+
+      //Ensure token belongs to this employee
+      if (token.employee_id !== employeeId) {
+        return res.status(403).json({ message: "Cannot serve this token" });
+      }
+
+      const servedPosition = token.queue_position;
+
+      //Mark token as SERVED
+      const serveSql = `
+        UPDATE tokens SET status = 'SERVED' WHERE id = ?
+      `;
+
+      db.query(serveSql, [tokenId], (err) => {
+        if (err) {
+          console.error("Serve token error:", err);
+          return res.status(500).json({ message: "Server error" });
+        }
+
+        //Shift queue positions
+        const shiftSql = `
+          UPDATE tokens
+          SET queue_position = queue_position - 1
+          WHERE employee_id = ?
+            AND status = 'WAITING'
+            AND queue_position > ?
+        `;
+
+        db.query(shiftSql, [employeeId, servedPosition], (err) => {
+          if (err) {
+            console.error("Queue shift error:", err);
+            return res.status(500).json({ message: "Server error" });
+          }
+
+          //Recalculate estimated times
+          const recalcSql = `
+            UPDATE tokens t
+            JOIN employees e ON t.employee_id = e.id
+            SET t.estimated_time = t.queue_position * e.avg_service_time
+            WHERE t.employee_id = ?
+              AND t.status = 'WAITING'
+          `;
+
+          db.query(recalcSql, [employeeId], (err) => {
+            if (err) {
+              console.error("Recalc error:", err);
+              return res.status(500).json({ message: "Server error" });
+            }
+
+            res.json({
+              success: true,
+              message: "Token served successfully",
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
