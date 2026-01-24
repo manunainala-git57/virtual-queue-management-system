@@ -1,6 +1,7 @@
 const db = require("../config/db");
-//Assign a new token to a user for a selected doctor, with correct queue position and estimated time, while preventing duplicates.
 
+
+//Assign a new token to a user for a selected doctor, with correct queue position and estimated time, while preventing duplicates.
 // TAKE TOKEN (USER)
 exports.takeToken = (req, res) => {
   const userId = req.user.id;
@@ -125,7 +126,6 @@ exports.takeToken = (req, res) => {
 };
 
 // SERVE TOKEN (EMPLOYEE)
-
 exports.serveToken = (req, res) => {
   const tokenId = req.params.tokenId;
   const employeeUserId = req.user.id;
@@ -230,6 +230,55 @@ exports.serveToken = (req, res) => {
             });
           });
         });
+      });
+    });
+  });
+};
+
+// VIEW EMPLOYEE QUEUE (EMPLOYEE)
+exports.getEmployeeQueue = (req, res) => {
+  const employeeUserId = req.user.id;
+
+  // Get employee_id from logged-in user
+  const employeeSql = `
+    SELECT id FROM employees WHERE user_id = ?
+  `;
+
+  db.query(employeeSql, [employeeUserId], (err, empResult) => {
+    if (err) {
+      console.error("Employee fetch error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (empResult.length === 0) {
+      return res.status(403).json({ message: "Not an employee" });
+    }
+
+    const employeeId = empResult[0].id;
+
+    //Fetch waiting queue
+    const queueSql = `
+      SELECT 
+        t.id AS token_id,
+        t.queue_position,
+        t.estimated_time,
+        u.name AS user_name
+      FROM tokens t
+      JOIN users u ON t.user_id = u.id
+      WHERE t.employee_id = ?
+        AND t.status = 'WAITING'
+      ORDER BY t.queue_position ASC
+    `;
+
+    db.query(queueSql, [employeeId], (err, queueResult) => {
+      if (err) {
+        console.error("Queue fetch error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      res.json({
+        success: true,
+        queue: queueResult,
       });
     });
   });
