@@ -93,3 +93,4 @@ Admins log in using admin credentials.
 - Customer flow analysis
 - Service efficiency insights
 
+**We implemented role-based authorization using a reusable middleware that checks roles from JWT payload.**
