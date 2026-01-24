@@ -8,6 +8,7 @@ const allowRoles = require("../middleware/allowRoles");
 const { takeToken } = require("../controllers/tokenController");
 const { serveToken } = require("../controllers/tokenController");
 const { getEmployeeQueue } = require("../controllers/tokenController");
+const { getMyToken } = require("../controllers/tokenController");
 
 //take token
 router.post("/", authMiddleware, allowRoles("USER"), takeToken);
@@ -26,6 +27,14 @@ router.get(
   authMiddleware,
   allowRoles("EMPLOYEE"),
   getEmployeeQueue
+);
+
+// VIEW MY TOKEN (USER)
+router.get(
+  "/my",
+  authMiddleware,
+  allowRoles("USER"),
+  getMyToken
 );
 
 module.exports = router;

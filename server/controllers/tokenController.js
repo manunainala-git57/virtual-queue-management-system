@@ -284,3 +284,44 @@ exports.getEmployeeQueue = (req, res) => {
   });
 };
 
+
+// VIEW MY TOKEN (USER)
+exports.getMyToken = (req, res) => {
+  const userId = req.user.id;
+
+  const sql = `
+    SELECT 
+      t.id AS token_id,
+      t.token_number,
+      t.queue_position,
+      t.estimated_time,
+      e.employee_name AS doctor
+    FROM tokens t
+    JOIN employees e ON t.employee_id = e.id
+    WHERE t.user_id = ?
+      AND t.status = 'WAITING'
+    LIMIT 1
+  `;
+
+  db.query(sql, [userId], (err, result) => {
+    if (err) {
+      console.error("My token fetch error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (result.length === 0) {
+      return res.json({
+        success: true,
+        message: "No active token",
+        token: null,
+      });
+    }
+
+    res.json({
+      success: true,
+      token: result[0],
+    });
+  });
+};
+
+
