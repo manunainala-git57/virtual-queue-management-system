@@ -94,3 +94,11 @@ Admins log in using admin credentials.
 - Service efficiency insights
 
 **We implemented role-based authorization using a reusable middleware that checks roles from JWT payload.**
+
+** Admin wants answers to questions like:**
+
+- How many tokens today?
+- How many served vs waiting?
+- Which doctors are busy?
+- Who logged in today?
+- weekly analytics?
