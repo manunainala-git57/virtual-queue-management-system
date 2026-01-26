@@ -18,6 +18,8 @@ app.use("/tokens", tokenRoutes);
 app.use("/admin", adminRoutes);
 
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server started on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 5000; // default to 5000 if .env missing
+
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });
