@@ -235,7 +235,7 @@ exports.serveToken = (req, res) => {
   });
 };
 
-// VIEW EMPLOYEE QUEUE (EMPLOYEE)
+// VIEW EMPLOYEE QUEUE (EMPLOYEE)(tokens that are booked by patients to this particular employee)
 exports.getEmployeeQueue = (req, res) => {
   const employeeUserId = req.user.id;
 

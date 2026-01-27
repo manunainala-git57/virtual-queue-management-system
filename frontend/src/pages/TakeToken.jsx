@@ -14,7 +14,7 @@ const TakeToken = () => {
     const fetchDoctors = async () => {
       if (!token) return;
       try {
-        const res = await fetch("http://localhost:5000/api/employees/active", {
+        const res = await fetch("http://localhost:5000/employees", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -33,7 +33,7 @@ const TakeToken = () => {
     setTokenInfo(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/tokens/create", {
+      const res = await fetch("http://localhost:5000/tokens", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

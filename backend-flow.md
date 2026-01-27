@@ -95,7 +95,7 @@ EMPLOYEE → Serve Token → SERVED
 ---
 
 ###  EMPLOYEE APIs
-- `GET /tokens/employee` – View my queue
+- `GET /tokens/employee` – View my queue (tokens that are booked by patients to this particular employee)
 - `POST /tokens/:id/serve` – Serve a token
 
 ---
