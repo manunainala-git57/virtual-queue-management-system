@@ -1,180 +1,123 @@
 import { useEffect, useState } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-} from "recharts";
 import "../styles/adminDashboard.css";
 
-const COLORS = ["#0088FE", "#FFBB28", "#FF4C4C"];
-
 const AdminDashboard = () => {
-  const [todaySummary, setTodaySummary] = useState({
-    waiting: 0,
-    serving: 0,
-    served: 0,
-  });
+  const [todayStats, setTodayStats] = useState({});
   const [doctorLoad, setDoctorLoad] = useState([]);
-  const [activeEmployees, setActiveEmployees] = useState([]);
-  const [weeklyTrend, setWeeklyTrend] = useState([]);
+  const [weeklyStats, setWeeklyStats] = useState([]);
+  const [activeDoctors, setActiveDoctors] = useState(0);
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) return;
 
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
     const fetchData = async () => {
       try {
-        // Today's token summary
-        const todayRes = await fetch("http://localhost:5000/admin/tokens/today", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (todayRes.ok) {
-          const res = await todayRes.json();
-          setTodaySummary(res.data);
-        }
+        const todayRes = await fetch(
+          "http://localhost:5000/admin/tokens/today",
+          { headers }
+        );
+        const todayData = await todayRes.json();
+        setTodayStats(todayData);
 
-        // Doctor load
-        const docRes = await fetch("http://localhost:5000/admin/doctor-load", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (docRes.ok) setDoctorLoad((await docRes.json()).doctors);
+        const loadRes = await fetch(
+          "http://localhost:5000/admin/doctor-load",
+          { headers }
+        );
+        const loadData = await loadRes.json();
+        setDoctorLoad(loadData.doctors || []);
 
-        // Active employees
-        const activeRes = await fetch("http://localhost:5000/admin/active-employees", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (activeRes.ok) setActiveEmployees((await activeRes.json()).active_employees);
+        const weeklyRes = await fetch(
+          "http://localhost:5000/admin/tokens/weekly",
+          { headers }
+        );
+        const weeklyData = await weeklyRes.json();
+        setWeeklyStats(weeklyData || []);
 
-        // Weekly tokens
-        const weeklyRes = await fetch("http://localhost:5000/admin/tokens/weekly", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (weeklyRes.ok) setWeeklyTrend((await weeklyRes.json()).trend);
+        const activeRes = await fetch(
+          "http://localhost:5000/admin/active-employees",
+          { headers }
+        );
+        const activeData = await activeRes.json();
+        setActiveDoctors(activeData.count || 0);
       } catch (err) {
-        console.error("Admin fetch error:", err);
-        alert("Failed to load admin data");
+        console.error("Admin dashboard error:", err);
       }
     };
 
     fetchData();
   }, [token]);
 
-  const pieData = [
-    { name: "Waiting", value: todaySummary.waiting },
-    { name: "Serving", value: todaySummary.serving },
-    { name: "Served", value: todaySummary.served },
-  ];
-
   return (
-    <div className="admin-dashboard">
+    <div className="admin-page">
       <h1>Admin Dashboard</h1>
+      <p className="subtitle">Hospital Queue Analytics Overview</p>
 
-      {/* Today's Summary */}
-      <section className="dashboard-section summary-section">
-        <h2>Today's Token Summary</h2>
-        <div className="summary-cards">
-          {["waiting", "serving", "served"].map((key, idx) => (
-            <div className="card" key={idx}>
-              <h3>{key.charAt(0).toUpperCase() + key.slice(1)}</h3>
-              <p>{todaySummary[key]}</p>
-            </div>
-          ))}
-          <div className="chart-card">
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+      {/* Top cards */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h3>Total Tokens Today</h3>
+          <p>{todayStats.total || 0}</p>
         </div>
-      </section>
+
+        <div className="stat-card served">
+          <h3>Served</h3>
+          <p>{todayStats.served || 0}</p>
+        </div>
+
+        <div className="stat-card waiting">
+          <h3>Waiting</h3>
+          <p>{todayStats.waiting || 0}</p>
+        </div>
+
+        <div className="stat-card">
+          <h3>Active Doctors</h3>
+          <p>{activeDoctors}</p>
+        </div>
+      </div>
 
       {/* Doctor Load */}
-      <section className="dashboard-section">
-        <h2>Doctor Load Today</h2>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Doctor Name</th>
-                <th>Total Tokens</th>
-                <th>Waiting</th>
-                <th>Served</th>
+      <div className="section">
+        <h2>Doctor-wise Patient Load</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Total Tokens</th>
+              <th>Served</th>
+              <th>Waiting</th>
+            </tr>
+          </thead>
+          <tbody>
+            {doctorLoad.map((doc) => (
+              <tr key={doc.employee_id}>
+                <td>{doc.employee_name}</td>
+                <td>{doc.total}</td>
+                <td>{doc.served}</td>
+                <td>{doc.waiting}</td>
               </tr>
-            </thead>
-            <tbody>
-              {doctorLoad.length > 0 ? (
-                doctorLoad.map((doc, idx) => (
-                  <tr key={idx}>
-                    <td>{doc.doctor}</td>
-                    <td>{doc.total_tokens}</td>
-                    <td>{doc.waiting}</td>
-                    <td>{doc.served}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4">Loading...</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Active Employees */}
-      <section className="dashboard-section">
-        <h2>Active Employees Today</h2>
-        <ul className="active-employees">
-          {activeEmployees.length > 0
-            ? activeEmployees.map((emp, idx) => <li key={idx}>{emp}</li>)
-            : "Loading..."}
-        </ul>
-      </section>
-
-      {/* Weekly Trend */}
-      <section className="dashboard-section">
-        <h2>Weekly Token Trend</h2>
-        <div className="linechart-container">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyTrend}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="total_tokens"
-                stroke="#0088FE"
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Weekly Trends */}
+      <div className="section">
+        <h2>Weekly System Usage</h2>
+        <div className="weekly-grid">
+          {weeklyStats.map((day) => (
+            <div key={day.date} className="day-card">
+              <h4>{day.date}</h4>
+              <p>{day.count} tokens</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
     </div>
   );
 };

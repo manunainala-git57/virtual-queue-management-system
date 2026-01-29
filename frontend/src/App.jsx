@@ -3,8 +3,9 @@ import "./styles/home.css";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import TakeToken from "./pages/TakeToken";
+import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -13,7 +14,6 @@ import HowItWorks from "./components/HowItWorks";
 import CTA from "./components/CTA";
 import Footer from "./components/Footer";
 
-// Home component
 const Home = () => (
   <>
     <Navbar />
@@ -25,20 +25,12 @@ const Home = () => (
   </>
 );
 
-// ProtectedRoute component
 const ProtectedRoute = ({ children, role }) => {
-  const userRole = localStorage.getItem("role");
   const token = localStorage.getItem("token");
+  const userRole = localStorage.getItem("role");
 
-  if (!token) {
-    // Not logged in
-    return <Navigate to="/login" replace />;
-  }
-
-  if (role && userRole !== role) {
-    // Role mismatch
-    return <Navigate to="/" replace />;
-  }
+  if (!token) return <Navigate to="/login" replace />;
+  if (role && role !== userRole) return <Navigate to="/" replace />;
 
   return children;
 };
@@ -47,33 +39,34 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
+        {/* Public */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* User route */}
+        {/* USER DASHBOARD */}
         <Route
           path="/user"
           element={
             <ProtectedRoute role="USER">
-              <TakeToken />
+              <Dashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Admin route */}
+        
         <Route
-          path="/admin"
-          element={
-            <ProtectedRoute role="ADMIN">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
+  path="/employee"
+  element={
+    
+      <EmployeeDashboard />
+    
+  }
+/>
+<Route path="/admin" element={<AdminDashboard />} />
 
-        {/* Optional fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

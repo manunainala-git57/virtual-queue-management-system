@@ -1,88 +1,119 @@
-.take-token-page {
-  min-height: 100vh;
+/* Page layout */
+.queue-dashboard {
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: #f9f9f9;
-  padding: 20px;
+  padding: 40px;
+  background: #f4f6f8;
+  min-height: 100vh;
 }
 
-.take-token-card {
+/* Main card */
+.book-card {
+  width: 600px;
   background: #ffffff;
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  max-width: 450px;
-  width: 100%;
-  text-align: center;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-.take-token-card h2 {
-  margin-bottom: 10px;
-  font-size: 26px;
-  color: #333;
-}
-
-.take-token-card p {
-  margin-bottom: 20px;
-  color: #666;
-  font-size: 14px;
-}
-
-.select-group {
-  margin-bottom: 25px;
-  text-align: left;
-}
-
-.select-group label {
-  display: block;
+.book-card h2 {
   margin-bottom: 5px;
-  font-weight: 500;
-  color: #333;
 }
 
-.select-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+.book-card p {
+  color: #6b7280;
+  margin-bottom: 20px;
 }
 
+/* GRID LAYOUT (2 per row) */
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Doctor card */
+.doctor-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  background: #ffffff;
+  transition: 0.3s ease;
+}
+
+.doctor-card:hover {
+  background: #f9fafb;
+}
+
+.doctor-card.active {
+  border: 2px solid #2563eb;
+  background: #eef2ff;
+}
+
+/* Doctor info */
+.doctor-info h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.doctor-info span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Queue info */
+.queue-info {
+  text-align: right;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Take token button */
 .take-token-btn {
   width: 100%;
-  padding: 12px 0;
-  background: #007bff;
-  color: white;
-  font-size: 16px;
+  padding: 14px;
+  background: linear-gradient(90deg, #2563eb, #0ea5e9);
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
 .take-token-btn:disabled {
-  background: #a0c4ff;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.take-token-btn:hover:not(:disabled) {
-  background: #0056b3;
+/* Token confirmation */
+.token-confirm {
+  margin-top: 30px;
+  text-align: center;
 }
 
-.token-info {
-  margin-top: 25px;
-  background: #f1f9ff;
-  padding: 15px 20px;
-  border-radius: 10px;
-  text-align: left;
-  color: #333;
+.token-confirm h3 {
+  margin-bottom: 10px;
 }
 
-.token-info h3 {
-  margin-bottom: 8px;
+.token-number {
+  font-size: 36px;
+  font-weight: bold;
+  color: #2563eb;
+  margin: 10px 0;
 }
 
-.token-info p {
-  margin: 4px 0;
+/* Responsive (mobile) */
+@media (max-width: 600px) {
+  .book-card {
+    width: 100%;
+  }
+
+  .doctor-grid {
+    grid-template-columns: 1fr;
+  }
 }

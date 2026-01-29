@@ -3,13 +3,13 @@ import "../styles/takeToken.css";
 
 const TakeToken = () => {
   const [doctors, setDoctors] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [tokenInfo, setTokenInfo] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
 
-  // Fetch active doctors
+  // Fetch doctors
   useEffect(() => {
     const fetchDoctors = async () => {
       if (!token) return;
@@ -29,6 +29,7 @@ const TakeToken = () => {
   // Take token
   const handleTakeToken = async () => {
     if (!selectedDoctor) return;
+
     setLoading(true);
     setTokenInfo(null);
 
@@ -39,38 +40,46 @@ const TakeToken = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ employee_id: selectedDoctor }),
+        body: JSON.stringify({ employee_id: selectedDoctor.id }),
       });
+
       const data = await res.json();
       if (res.ok) setTokenInfo(data.token);
       else alert(data.message || "Failed to take token");
     } catch (err) {
-      console.error(err);
-      alert("Something went wrong while taking token");
+      alert("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="take-token-page">
-      <div className="take-token-card">
-        <h2>Take Your Token</h2>
+    <div className="queue-dashboard">
+      <div className="book-card">
+        <h2>Book Appointment</h2>
         <p>Select a doctor to get your token and estimated wait time</p>
 
-        <div className="select-group">
-          <label>Choose Doctor</label>
-          <select
-            value={selectedDoctor}
-            onChange={(e) => setSelectedDoctor(e.target.value)}
-          >
-            <option value="">-- Select --</option>
-            {doctors.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.employee_name} (Avg {doc.avg_service_time} min)
-              </option>
-            ))}
-          </select>
+        {/* DOCTOR GRID */}
+        <div className="doctor-grid">
+          {doctors.map((doc) => (
+            <div
+              key={doc.id}
+              className={`doctor-card ${
+                selectedDoctor?.id === doc.id ? "active" : ""
+              }`}
+              onClick={() => setSelectedDoctor(doc)}
+            >
+              <div className="doctor-info">
+                <h4>{doc.employee_name}</h4>
+                <span>Avg {doc.avg_service_time} mins</span>
+              </div>
+
+              <div className="queue-info">
+                <p>{doc.queue_count || 0} waiting</p>
+                <p>~ {(doc.queue_count || 1) * doc.avg_service_time} mins</p>
+              </div>
+            </div>
+          ))}
         </div>
 
         <button
@@ -82,11 +91,12 @@ const TakeToken = () => {
         </button>
 
         {tokenInfo && (
-          <div className="token-info">
-            <h3>Your Token: {tokenInfo.token_number}</h3>
-            <p>Doctor: {tokenInfo.doctor}</p>
-            <p>Queue Position: {tokenInfo.queue_position}</p>
-            <p>Estimated Time: {tokenInfo.estimated_time}</p>
+          <div className="token-confirm">
+            <h3>Token Confirmed!</h3>
+            <div className="token-number">#{tokenInfo.token_number}</div>
+            <p><b>Doctor:</b> {tokenInfo.doctor}</p>
+            <p><b>Queue Position:</b> {tokenInfo.queue_position}</p>
+            <p><b>Expected Time:</b> {tokenInfo.estimated_time}</p>
           </div>
         )}
       </div>

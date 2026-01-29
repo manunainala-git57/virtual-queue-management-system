@@ -1,0 +1,125 @@
+.employee-dashboard {
+  padding: 30px;
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  min-height: 100vh;
+}
+
+/* HEADER */
+.emp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.emp-header h2 {
+  font-size: 26px;
+}
+
+.live-badge {
+  background: #22c55e;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* CURRENT TOKEN */
+.current-token-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+}
+
+.current-token-card h3 {
+  margin-bottom: 10px;
+}
+
+.token-number {
+  font-size: 52px;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 12px 0;
+}
+
+.patient-info p {
+  color: #475569;
+  margin: 4px 0;
+}
+
+.complete-btn {
+  margin-top: 20px;
+  padding: 14px 26px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  color: white;
+  cursor: pointer;
+}
+
+.complete-btn:disabled {
+  opacity: 0.6;
+}
+
+/* QUEUE */
+.queue-section h3 {
+  margin-bottom: 14px;
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.queue-card {
+  background: white;
+  padding: 16px 18px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+}
+
+.queue-index {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.queue-info h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.queue-info p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.waiting-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.empty {
+  text-align: center;
+  color: #64748b;
+  margin-top: 20px;
+}
