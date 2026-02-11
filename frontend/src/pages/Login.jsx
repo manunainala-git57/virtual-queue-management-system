@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Login = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -36,11 +38,9 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // Save token and role
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
 
-        // Role-based redirect
         const role = data.user.role.toLowerCase();
         if (role === "admin") navigate("/admin");
         else if (role === "employee") navigate("/employee");
@@ -60,7 +60,9 @@ const Login = () => {
     <div className="login-page">
       <div className="login-card">
         <h2>Welcome Back</h2>
+
         <form className="login-form" onSubmit={handleSubmit}>
+          {/* Email */}
           <div className="input-group">
             <label>Email</label>
             <input
@@ -72,15 +74,28 @@ const Login = () => {
             />
           </div>
 
+          {/* Password */}
           <div className="input-group">
             <label>Password</label>
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
+
+            <div className="password-input-wrapper">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                className="login-input"
+              
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+
+              <span
+                className="password-toggle-icon"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
           </div>
 
           <button className="login-btn" disabled={loading}>

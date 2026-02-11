@@ -1,5 +1,27 @@
 import { useEffect, useState } from "react";
 import "../styles/adminDashboard.css";
+import DashboardNavbar from "../components/DashboardNavbar";
+
+// CHART IMPORTS
+import { Bar, Doughnut } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
 
 const AdminDashboard = () => {
   const [todayStats, setTodayStats] = useState({});
@@ -12,41 +34,27 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!token) return;
 
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    const headers = { Authorization: `Bearer ${token}` };
 
     const fetchData = async () => {
       try {
-        const todayRes = await fetch(
-          "http://localhost:5000/admin/tokens/today",
-          { headers }
-        );
-        const todayData = await todayRes.json();
-        setTodayStats(todayData);
+        const d1 = await fetch("http://localhost:5000/admin/tokens/today", { headers });
+        setTodayStats(await d1.json());
 
-        const loadRes = await fetch(
-          "http://localhost:5000/admin/doctor-load",
-          { headers }
-        );
-        const loadData = await loadRes.json();
-        setDoctorLoad(loadData.doctors || []);
+        const d2 = await fetch("http://localhost:5000/admin/doctor-load", { headers });
+        const docData = await d2.json();
+        setDoctorLoad(docData.doctors || []);
 
-        const weeklyRes = await fetch(
-          "http://localhost:5000/admin/tokens/weekly",
-          { headers }
-        );
-        const weeklyData = await weeklyRes.json();
-        setWeeklyStats(weeklyData || []);
+        const d3 = await fetch("http://localhost:5000/admin/tokens/weekly", { headers });
+        const w = await d3.json();
+        setWeeklyStats(Array.isArray(w) ? w : []);
 
-        const activeRes = await fetch(
-          "http://localhost:5000/admin/active-employees",
-          { headers }
-        );
-        const activeData = await activeRes.json();
+        const d4 = await fetch("http://localhost:5000/admin/active-employees", { headers });
+        const activeData = await d4.json();
         setActiveDoctors(activeData.count || 0);
+
       } catch (err) {
-        console.error("Admin dashboard error:", err);
+        console.error("Admin Dashboard Error:", err);
       }
     };
 
@@ -54,71 +62,153 @@ const AdminDashboard = () => {
   }, [token]);
 
   return (
-    <div className="admin-page">
-      <h1>Admin Dashboard</h1>
-      <p className="subtitle">Hospital Queue Analytics Overview</p>
+    <>
+      {/* 🔹 Top Navbar */}
+      <DashboardNavbar />
 
-      {/* Top cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Total Tokens Today</h3>
-          <p>{todayStats.total || 0}</p>
+      <div className="admin-page dashboard-page-content">
+
+        {/* TITLE */}
+        <h1 className="admin-title">Admin Dashboard</h1>
+        <p className="subtitle">Overview of your organization's queue performance</p>
+
+        {/* SUMMARY CARDS */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <h2>{todayStats.total || 0}</h2>
+            <p>Total Today</p>
+          </div>
+
+          <div className="stat-card">
+            <h2>{todayStats.served || 0}</h2>
+            <p>Served</p>
+          </div>
+
+          <div className="stat-card">
+            <h2>{todayStats.waiting || 0}</h2>
+            <p>Waiting</p>
+          </div>
+
+          <div className="stat-card">
+            <h2>{todayStats.avgWait || 0}m</h2>
+            <p>Avg. Wait Time</p>
+          </div>
         </div>
 
-        <div className="stat-card served">
-          <h3>Served</h3>
-          <p>{todayStats.served || 0}</p>
-        </div>
+        {/* CHARTS ROW */}
+        <div className="charts-row">
 
-        <div className="stat-card waiting">
-          <h3>Waiting</h3>
-          <p>{todayStats.waiting || 0}</p>
-        </div>
+          {/* WEEKLY BAR CHART */}
+          <div className="chart-card">
+            <h3>📊 Weekly Overview</h3>
+            <p className="chart-subtitle">Customer traffic for the past 7 days</p>
 
-        <div className="stat-card">
-          <h3>Active Doctors</h3>
-          <p>{activeDoctors}</p>
-        </div>
-      </div>
-
-      {/* Doctor Load */}
-      <div className="section">
-        <h2>Doctor-wise Patient Load</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Doctor</th>
-              <th>Total Tokens</th>
-              <th>Served</th>
-              <th>Waiting</th>
-            </tr>
-          </thead>
-          <tbody>
-            {doctorLoad.map((doc) => (
-              <tr key={doc.employee_id}>
-                <td>{doc.employee_name}</td>
-                <td>{doc.total}</td>
-                <td>{doc.served}</td>
-                <td>{doc.waiting}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Weekly Trends */}
-      <div className="section">
-        <h2>Weekly System Usage</h2>
-        <div className="weekly-grid">
-          {weeklyStats.map((day) => (
-            <div key={day.date} className="day-card">
-              <h4>{day.date}</h4>
-              <p>{day.count} tokens</p>
+            <div className="chart-wrapper">
+              <Bar
+                data={{
+                  labels: (weeklyStats || []).map((d) => d.date),
+                  datasets: [
+                    {
+                      label: "Tokens",
+                      data: (weeklyStats || []).map((d) => d.count),
+                      backgroundColor: "#3b82f6",
+                      borderRadius: 8,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: { legend: { display: false } },
+                  scales: { y: { beginAtZero: true } },
+                }}
+              />
             </div>
-          ))}
+          </div>
+
+          {/* TODAY'S STATUS DOUGHNUT */}
+          <div className="chart-card">
+            <h3>📈 Today's Status</h3>
+            <p className="chart-subtitle">Service completion ratio</p>
+
+            <div className="chart-wrapper donut">
+              <Doughnut
+                data={{
+                  labels: ["Served", "Waiting"],
+                  datasets: [
+                    {
+                      data: [todayStats.served || 0, todayStats.waiting || 0],
+                      backgroundColor: ["#22c55e", "#f59e0b"],
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  cutout: "70%",
+                  plugins: { legend: { position: "bottom" } },
+                }}
+              />
+            </div>
+          </div>
+
         </div>
+
+        {/* EMPLOYEE PERFORMANCE */}
+        <div className="section">
+          <h2 className="section-title">👨‍⚕️ Employee Performance</h2>
+          <p className="chart-subtitle">Today's active employees</p>
+
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Queue</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {(doctorLoad || []).map((doc) => (
+                <tr key={doc.employee_id}>
+                  <td>{doc.employee_name}</td>
+                  <td>{doc.department}</td>
+                  <td>{doc.waiting}</td>
+                  <td><span className="badge active">Active</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* TODAY'S TOKENS */}
+        <div className="section">
+          <h2 className="section-title">🎟️ Today's Tokens</h2>
+
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Customer</th>
+                <th>Employee</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {(todayStats.tokens || []).map((tk, index) => (
+                <tr key={index}>
+                  <td>#{tk.token_number}</td>
+                  <td>{tk.user_name}</td>
+                  <td>{tk.employee_name}</td>
+                  <td>{tk.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
       </div>
-    </div>
+    </>
   );
 };
 

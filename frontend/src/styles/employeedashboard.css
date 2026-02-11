@@ -1,125 +1,152 @@
-.employee-dashboard {
+/* MAIN CONTAINER */
+.emp-dashboard-container {
   padding: 30px;
-  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  background: #f4f7ff;
   min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-/* HEADER */
-.emp-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* TITLE */
+.page-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: #0f172a;
+}
+
+.page-subtitle {
+  color: #64748b;
   margin-bottom: 25px;
 }
 
-.emp-header h2 {
-  font-size: 26px;
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
 }
 
-.live-badge {
-  background: #22c55e;
-  color: white;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* CURRENT TOKEN */
-.current-token-card {
-  background: white;
-  border-radius: 20px;
-  padding: 30px;
+.stat-card {
+  background: #ffffff;
+  border-radius: 18px;
   text-align: center;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30px;
+  padding: 30px 25px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: 0.2s;
 }
 
-.current-token-card h3 {
-  margin-bottom: 10px;
+.stat-card:hover {
+  transform: translateY(-3px);
 }
 
-.token-number {
-  font-size: 52px;
+.stat-card h2 {
+  font-size: 34px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.stat-card p {
+  font-size: 16px;
+  margin-top: 8px;
+  color: #475569;
+}
+
+/* CUSTOMER QUEUE CARD */
+.queue-card {
+  margin-top: 35px;
+  background: #ffffff;
+  padding: 25px 30px;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.queue-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.queue-subtitle {
+  color: #64748b;
+  margin-bottom: 18px;
+}
+
+/* TABLE */
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.queue-table thead tr {
+  background: #f1f5f9;
+}
+
+.queue-table th {
+  padding: 14px;
+  text-align: left;
+  font-size: 15px;
+  color: #334155;
+}
+
+.queue-table td {
+  padding: 14px;
+  font-size: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.token-col {
   font-weight: 700;
   color: #2563eb;
-  margin: 12px 0;
-}
-
-.patient-info p {
-  color: #475569;
-  margin: 4px 0;
-}
-
-.complete-btn {
-  margin-top: 20px;
-  padding: 14px 26px;
-  border-radius: 14px;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  background: linear-gradient(90deg, #22c55e, #16a34a);
-  color: white;
-  cursor: pointer;
-}
-
-.complete-btn:disabled {
-  opacity: 0.6;
-}
-
-/* QUEUE */
-.queue-section h3 {
-  margin-bottom: 14px;
-}
-
-.queue-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.queue-card {
-  background: white;
-  padding: 16px 18px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
-}
-
-.queue-index {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #e0e7ff;
-  color: #1e40af;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-}
-
-.queue-info h4 {
-  margin: 0;
   font-size: 15px;
 }
 
-.queue-info p {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.waiting-badge {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 6px 14px;
+/* BADGES */
+.badge {
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 13px;
+  font-weight: 600;
+  color: white;
 }
 
-.empty {
-  text-align: center;
-  color: #64748b;
-  margin-top: 20px;
+.badge.next {
+  background: #3b82f6;
+}
+
+.badge.wait {
+  background: #94a3b8;
+}
+
+/* ACTION BUTTON */
+.serve-btn {
+  background: #10b981;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.serve-btn:hover {
+  background: #059669;
+}
+
+.serve-next-btn {
+  margin-top: 18px;
+  padding: 12px 18px;
+  background: #0284c7;
+  border: none;
+  color: white;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.serve-next-btn:hover {
+  background: #0369a1;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../styles/dashboard.css";
+import DashboardNavbar from "../components/DashboardNavbar";
 
 const Dashboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -10,7 +11,7 @@ const Dashboard = () => {
 
   const token = localStorage.getItem("token");
 
-  // 🔹 Fetch doctors
+  // Fetch doctors
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -28,7 +29,7 @@ const Dashboard = () => {
     fetchDoctors();
   }, [token]);
 
-  // 🔹 Take token
+  // Take token
   const handleTakeToken = async () => {
     if (!selectedDoctor) return;
 
@@ -60,7 +61,7 @@ const Dashboard = () => {
     }
   };
 
-  // 🔔 10-minute reminder popup
+  // Reminder popup
   useEffect(() => {
     if (activeToken) {
       const mins = parseInt(activeToken.estimated_time);
@@ -71,77 +72,80 @@ const Dashboard = () => {
   }, [activeToken]);
 
   return (
-    <div className="dashboard">
-      {/* LEFT PANEL */}
-      <div className="left-panel">
-        <h2>Book Appointment</h2>
-        <p>Select a doctor to take token</p>
+    <>
+      {/* TOP NAVBAR */}
+      <DashboardNavbar />
 
-        <div className="doctor-grid">
-          {doctors.map((doc) => (
-            <div
-              key={doc.id}
-              className={`doctor-card ${
-                selectedDoctor?.id === doc.id ? "active" : ""
-              }`}
-              onClick={() => setSelectedDoctor(doc)}
-            >
-              <h4>{doc.employee_name}</h4>
-              <span>Avg {doc.avg_service_time} mins</span>
-            </div>
-          ))}
+      <div className="dashboard-page-content dashboard">
+        {/* LEFT PANEL */}
+        <div className="left-panel">
+          <h2>Book Appointment</h2>
+          <p>Select a doctor to take token</p>
+
+          <div className="doctor-grid">
+            {doctors.map((doc) => (
+              <div
+                key={doc.id}
+                className={`doctor-card ${
+                  selectedDoctor?.id === doc.id ? "active" : ""
+                }`}
+                onClick={() => setSelectedDoctor(doc)}
+              >
+                <h4>{doc.employee_name}</h4>
+                <span>Avg {doc.avg_service_time} mins</span>
+              </div>
+            ))}
+          </div>
+
+          <button
+            className="take-token-btn"
+            disabled={!selectedDoctor || loading}
+            onClick={handleTakeToken}
+          >
+            {loading ? "Generating..." : "Take Token"}
+          </button>
         </div>
 
-        <button
-          className="take-token-btn"
-          disabled={!selectedDoctor || loading}
-          onClick={handleTakeToken}
-        >
-          {loading ? "Generating..." : "Take Token"}
-        </button>
-      </div>
+        {/* RIGHT PANEL */}
+        <div className="right-panel">
+          <h3>Your Active Token</h3>
 
-      {/* RIGHT PANEL */}
-      <div className="right-panel">
-        <h3>Your Active Token</h3>
-
-        {activeToken ? (
-          <div className="token-card">
-            <div className="token-badge">
-              #{activeToken.token_number}
-            </div>
-
-            <h4 className="doctor-name">
-              {activeToken.doctor}
-            </h4>
-
-            <div className="token-details">
-              <div className="detail-box">
-                <span>Queue Position</span>
-                <strong>{activeToken.queue_position}</strong>
+          {activeToken ? (
+            <div className="token-card">
+              <div className="token-badge">
+                #{activeToken.token_number}
               </div>
 
-              <div className="detail-box">
-                <span>Estimated Time</span>
-                <strong>{activeToken.estimated_time}</strong>
-              </div>
-            </div>
+              <h4 className="doctor-name">{activeToken.doctor}</h4>
 
-            <span className="status waiting">Waiting</span>
+              <div className="token-details">
+                <div className="detail-box">
+                  <span>Queue Position</span>
+                  <strong>{activeToken.queue_position}</strong>
+                </div>
+
+                <div className="detail-box">
+                  <span>Estimated Time</span>
+                  <strong>{activeToken.estimated_time}</strong>
+                </div>
+              </div>
+
+              <span className="status waiting">Waiting</span>
+            </div>
+          ) : (
+            <p className="no-token">No active token</p>
+          )}
+        </div>
+
+        {/* REMINDER POPUP */}
+        {showReminder && (
+          <div className="reminder-popup">
+            ⏰ Your appointment is in 10 minutes. Please reach the venue.
+            <button onClick={() => setShowReminder(false)}>✕</button>
           </div>
-        ) : (
-          <p className="no-token">No active token</p>
         )}
       </div>
-
-      {/* 🔔 REMINDER POPUP */}
-      {showReminder && (
-        <div className="reminder-popup">
-          ⏰ Your appointment is in 10 minutes. Please reach the venue.
-          <button onClick={() => setShowReminder(false)}>✕</button>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 

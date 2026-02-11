@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/register.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -10,9 +12,13 @@ const Register = () => {
     email: "",
     mobile: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -88,16 +94,48 @@ const Register = () => {
             />
           </div>
 
+          {/* Password */}
           <div className="input-group">
             <label>Password</label>
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+               
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+              <span
+                className="password-toggle-icon"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
           </div>
+
+          {/* Confirm Password */}
+          <div className="input-group">
+            <label>Confirm Password</label>
+            <div className="password-input-wrapper">
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              <span
+                className="password-toggle-icon"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
+          </div>
+
 
           <button className="register-btn" disabled={loading}>
             {loading ? "Registering..." : "Sign Up"}
