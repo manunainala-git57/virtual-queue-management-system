@@ -8,6 +8,8 @@ const Dashboard = () => {
   const [activeToken, setActiveToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
+  const hasActiveToken = !!activeToken;
+
 
   const token = localStorage.getItem("token");
 
@@ -28,6 +30,11 @@ const Dashboard = () => {
     };
     fetchDoctors();
   }, [token]);
+
+  useEffect(() => {
+  fetchMyToken();
+}, []);
+
 
   // Take token
   const handleTakeToken = async () => {
@@ -52,14 +59,38 @@ const Dashboard = () => {
       if (res.ok) {
         setActiveToken(data.token);
       } else {
-        alert(data.message || "Failed to take token");
+        if (data.message === "You already have an active token") {
+          await fetchMyToken();  
+        } else {
+          alert(data.message || "Failed to take token");
+        }
       }
+
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
+  const fetchMyToken = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/tokens/my", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      setActiveToken(data.token);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   // Reminder popup
   useEffect(() => {
@@ -99,11 +130,16 @@ const Dashboard = () => {
 
           <button
             className="take-token-btn"
-            disabled={!selectedDoctor || loading}
+            disabled={!selectedDoctor || loading || hasActiveToken}
             onClick={handleTakeToken}
           >
-            {loading ? "Generating..." : "Take Token"}
+            {loading
+              ? "Generating..."
+              : hasActiveToken
+              ? "Token Already Booked"
+              : "Take Token"}
           </button>
+
         </div>
 
         {/* RIGHT PANEL */}
