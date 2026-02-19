@@ -1,6 +1,7 @@
 const db = require("../config/db");
 
 
+
 //Assign a new token to a user for a selected doctor, with correct queue position and estimated time, while preventing duplicates.
 // TAKE TOKEN (USER)
 exports.takeToken = (req, res) => {
@@ -108,6 +109,10 @@ exports.takeToken = (req, res) => {
               return res.status(500).json({ message: "Server error" });
             }
 
+            //  Emit real-time update
+            const io = req.app.get("io");
+            io.emit("queueUpdated");
+
             // Send response
             res.status(201).json({
               success: true,
@@ -130,7 +135,6 @@ exports.serveToken = (req, res) => {
   const tokenId = req.params.tokenId;
   const employeeUserId = req.user.id;
 
-  // Find employee_id linked to logged-in employee
   const employeeSql = `
     SELECT id FROM employees WHERE user_id = ?
   `;
@@ -147,7 +151,6 @@ exports.serveToken = (req, res) => {
 
     const employeeId = empResult[0].id;
 
-    //Fetch token to be served
     const tokenSql = `
       SELECT id, employee_id, queue_position
       FROM tokens
@@ -165,25 +168,13 @@ exports.serveToken = (req, res) => {
       }
 
       const token = tokenResult[0];
-      /*
-        tokenResult = [
-                {
-                    id: 1,
-                    employee_id: 3,
-                    queue_position: 1
-                }
-            ];
-        token = tokenResult[0];
-      */
 
-      //Ensure token belongs to this employee
       if (token.employee_id !== employeeId) {
         return res.status(403).json({ message: "Cannot serve this token" });
       }
 
       const servedPosition = token.queue_position;
 
-      //Mark token as SERVED
       const serveSql = `
         UPDATE tokens SET status = 'SERVED' WHERE id = ?
       `;
@@ -194,7 +185,6 @@ exports.serveToken = (req, res) => {
           return res.status(500).json({ message: "Server error" });
         }
 
-        //Shift queue positions
         const shiftSql = `
           UPDATE tokens
           SET queue_position = queue_position - 1
@@ -209,7 +199,6 @@ exports.serveToken = (req, res) => {
             return res.status(500).json({ message: "Server error" });
           }
 
-          //Recalculate estimated times
           const recalcSql = `
             UPDATE tokens t
             JOIN employees e ON t.employee_id = e.id
@@ -224,6 +213,13 @@ exports.serveToken = (req, res) => {
               return res.status(500).json({ message: "Server error" });
             }
 
+            // 🔥 EMIT WEBSOCKET EVENT (ONLY AFTER SUCCESS)
+            const io = req.app.get("io");
+            io.emit("queueUpdated", {
+              employeeId: employeeId,
+              servedTokenId: tokenId
+            });
+
             res.json({
               success: true,
               message: "Token served successfully",
@@ -235,13 +231,13 @@ exports.serveToken = (req, res) => {
   });
 };
 
-// VIEW EMPLOYEE QUEUE (EMPLOYEE)(tokens that are booked by patients to this particular employee)
+
+// VIEW EMPLOYEE QUEUE along with some STATS (EMPLOYEE)(tokens that are booked by patients to this particular employee)
 exports.getEmployeeQueue = (req, res) => {
   const employeeUserId = req.user.id;
 
-  // Get employee_id from logged-in user
   const employeeSql = `
-    SELECT id FROM employees WHERE user_id = ?
+    SELECT id, avg_service_time FROM employees WHERE user_id = ?
   `;
 
   db.query(employeeSql, [employeeUserId], (err, empResult) => {
@@ -255,8 +251,9 @@ exports.getEmployeeQueue = (req, res) => {
     }
 
     const employeeId = empResult[0].id;
+    const avgServiceTime = empResult[0].avg_service_time;
 
-    //Fetch waiting queue
+    // Fetch waiting queue
     const queueSql = `
       SELECT 
         t.id AS token_id,
@@ -276,13 +273,51 @@ exports.getEmployeeQueue = (req, res) => {
         return res.status(500).json({ message: "Server error" });
       }
 
-      res.json({
-        success: true,
-        queue: queueResult,
+      // Count served today
+      const servedTodaySql = `
+        SELECT COUNT(*) AS servedToday
+        FROM tokens
+        WHERE employee_id = ?
+          AND status = 'SERVED'
+          AND DATE(updated_at) = CURDATE()
+      `;
+
+      db.query(servedTodaySql, [employeeId], (err, servedResult) => {
+        if (err) {
+          console.error("Served count error:", err);
+          return res.status(500).json({ message: "Server error" });
+        }
+
+        // Total today
+        const totalTodaySql = `
+          SELECT COUNT(*) AS totalToday
+          FROM tokens
+          WHERE employee_id = ?
+            AND DATE(created_at) = CURDATE()
+        `;
+
+        db.query(totalTodaySql, [employeeId], (err, totalResult) => {
+          if (err) {
+            console.error("Total count error:", err);
+            return res.status(500).json({ message: "Server error" });
+          }
+
+          res.json({
+            success: true,
+            queue: queueResult,
+            stats: {
+              inQueue: queueResult.length,
+              servedToday: servedResult[0].servedToday,
+              totalToday: totalResult[0].totalToday,
+              avgServiceTime: avgServiceTime,
+            },
+          });
+        });
       });
     });
   });
 };
+
 
 
 // VIEW MY TOKEN (USER)

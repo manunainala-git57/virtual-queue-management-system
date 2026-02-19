@@ -1,5 +1,6 @@
 const db = require("../config/db");
 
+
 //GET ACTIVE DOCTORS (For Users & Admin)
 
 exports.getActiveDoctors = (req, res) => {

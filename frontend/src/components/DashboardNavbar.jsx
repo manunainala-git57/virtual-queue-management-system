@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import "./dashboardNavbar.css";
+import "../styles/dashboardNavbar.css";
 import queueLogo from "../assets/queue.png";
 
 const DashboardNavbar = () => {
