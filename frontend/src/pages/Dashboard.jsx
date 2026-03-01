@@ -10,6 +10,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [showReminder, setShowReminder] = useState(false);
+
 
   const token = localStorage.getItem("token");
   const hasActiveToken = !!activeToken;
@@ -124,7 +126,6 @@ useEffect(() => {
     }
     }
     else {
-    // there is no active token, hide reminder
     setShowReminder(false);
   }
 

@@ -54,7 +54,6 @@ const Login = () => {
       localStorage.setItem("role", data.user.role);
       localStorage.setItem("id", data.user.id);
 
-      // 🔥 SPECIALIZATION MAP
       const doctorMap = {
         2: "General Physician",
         3: "Cardiologist",
@@ -63,7 +62,6 @@ const Login = () => {
         6: "Pediatrician",
       };
 
-      // 🔥 STORE SPECIALIZATION ONLY IF EMPLOYEE LOGS IN
       if (data.user.role === "EMPLOYEE") {
         const specialization = doctorMap[data.user.id] || "Employee";
         localStorage.setItem("specialization", specialization);

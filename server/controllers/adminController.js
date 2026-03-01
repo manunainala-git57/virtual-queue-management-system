@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 // TODAY'S TOKEN SUMMARY (ADMIN)
 exports.getTodayTokenSummary = (req, res) => {
-  const sql = `
+  const summarySql = `
     SELECT 
       COUNT(*) AS total_tokens,
       SUM(CASE WHEN status = 'SERVED' THEN 1 ELSE 0 END) AS served,
@@ -11,15 +11,38 @@ exports.getTodayTokenSummary = (req, res) => {
     WHERE DATE(created_at) = CURDATE()
   `;
 
-  db.query(sql, (err, result) => {
+  db.query(summarySql, (err, summaryResult) => {
     if (err) {
       console.error("Today summary error:", err);
       return res.status(500).json({ message: "Server error" });
     }
 
-    res.json({
-      success: true,
-      data: result[0],
+    const tokensSql = `
+      SELECT 
+        t.token_number,
+        t.status,
+        u.name AS user_name,
+        e.employee_name
+      FROM tokens t
+      JOIN users u ON t.user_id = u.id
+      JOIN employees e ON t.employee_id = e.id
+      WHERE DATE(t.created_at) = CURDATE()
+      ORDER BY t.id DESC
+    `;
+
+    db.query(tokensSql, (err, tokensResult) => {
+      if (err) {
+        console.error("Today tokens fetch error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...summaryResult[0],
+          tokens: tokensResult,
+        },
+      });
     });
   });
 };

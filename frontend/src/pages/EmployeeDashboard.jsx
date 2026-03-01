@@ -28,7 +28,7 @@ const EmployeeDashboard = () => {
     });
 
     const data = await res.json();
-    console.log("EMP QUEUE RESPONSE:", data); // 🔥 IMPORTANT
+    console.log("EMP QUEUE RESPONSE:", data); 
 
     if (res.ok) {
       setQueue(data.queue || []);
