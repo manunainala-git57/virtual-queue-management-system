@@ -7,21 +7,23 @@ const Dashboard = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [activeToken, setActiveToken] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showReminder, setShowReminder] = useState(false);
-  const hasActiveToken = !!activeToken;
-
+  const [userName, setUserName] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
 
   const token = localStorage.getItem("token");
+  const hasActiveToken = !!activeToken;
 
-  // Fetch doctors
+  useEffect(() => {
+    setUserName(localStorage.getItem("name"));
+  }, []);
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         const res = await fetch("http://localhost:5000/employees", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
+
         const data = await res.json();
         if (data.success) setDoctors(data.doctors);
       } catch (err) {
@@ -32,11 +34,22 @@ const Dashboard = () => {
   }, [token]);
 
   useEffect(() => {
-  fetchMyToken();
-}, []);
+    fetchMyToken();
+  }, []);
 
+  const fetchMyToken = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/tokens/my", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  // Take token
+      const data = await res.json();
+      if (res.ok && data.token) setActiveToken(data.token);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleTakeToken = async () => {
     if (!selectedDoctor) return;
 
@@ -57,15 +70,19 @@ const Dashboard = () => {
       const data = await res.json();
 
       if (res.ok) {
+        // Store token
         setActiveToken(data.token);
+
+        // Show animated popup
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 3000);
       } else {
         if (data.message === "You already have an active token") {
-          await fetchMyToken();  
+          await fetchMyToken();
         } else {
           alert(data.message || "Failed to take token");
         }
       }
-
     } catch (err) {
       console.error(err);
     } finally {
@@ -73,84 +90,64 @@ const Dashboard = () => {
     }
   };
 
-  const fetchMyToken = async () => {
-  try {
-    const res = await fetch("http://localhost:5000/tokens/my", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.token) {
-      setActiveToken(data.token);
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-
-  // Reminder popup
-  useEffect(() => {
-    if (activeToken) {
-      const mins = parseInt(activeToken.estimated_time);
-      if (mins <= 10) {
-        setShowReminder(true);
-      }
-    }
-  }, [activeToken]);
-
   return (
     <>
-      {/* TOP NAVBAR */}
       <DashboardNavbar />
 
-      <div className="dashboard-page-content dashboard">
-        {/* LEFT PANEL */}
-        <div className="left-panel">
-          <h2>Book Appointment</h2>
-          <p>Select a doctor to take token</p>
+      {/* POPUP MESSAGE */}
+      {showPopup && (
+        <div className="popup-success">
+          🎉 Congratulations {userName}! <br />
+          Your token is confirmed for{" "}
+          <strong>{selectedDoctor?.employee_name}</strong>.
+        </div>
+      )}
 
-          <div className="doctor-grid">
-            {doctors.map((doc) => (
-              <div
-                key={doc.id}
-                className={`doctor-card ${
-                  selectedDoctor?.id === doc.id ? "active" : ""
-                }`}
-                onClick={() => setSelectedDoctor(doc)}
-              >
-                <h4>{doc.employee_name}</h4>
-                <span>Avg {doc.avg_service_time} mins</span>
-              </div>
-            ))}
+      {/* WELCOME */}
+      <div className="welcome-section">
+        <h1 className="welcome-title">Welcome, {userName}! 👋</h1>
+        <p className="welcome-sub">Book your appointment and track your queue position</p>
+      </div>
+
+      {/* MAIN GRID */}
+      <div className="dashboard-layout">
+
+        {/* LEFT SIDE */}
+        <div className="left-column">
+          <div className="booking-card">
+            <h2>Book Appointment</h2>
+            <p>Select a doctor to take token</p>
+
+            <div className="doctor-grid">
+              {doctors.map((doc) => (
+                <div
+                  key={doc.id}
+                  className={`doctor-card ${selectedDoctor?.id === doc.id ? "active" : ""}`}
+                  onClick={() => setSelectedDoctor(doc)}
+                >
+                  <h4>{doc.employee_name}</h4>
+                  <span>Avg {doc.avg_service_time} mins</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              className="take-token-btn"
+              disabled={!selectedDoctor || loading || hasActiveToken}
+              onClick={handleTakeToken}
+            >
+              {loading ? "Generating..." : hasActiveToken ? "Token Already Booked" : "Take Token"}
+            </button>
           </div>
-
-          <button
-            className="take-token-btn"
-            disabled={!selectedDoctor || loading || hasActiveToken}
-            onClick={handleTakeToken}
-          >
-            {loading
-              ? "Generating..."
-              : hasActiveToken
-              ? "Token Already Booked"
-              : "Take Token"}
-          </button>
-
         </div>
 
-        {/* RIGHT PANEL */}
-        <div className="right-panel">
-          <h3>Your Active Token</h3>
-
+        {/* RIGHT SIDE */}
+        <div className="right-column">
           {activeToken ? (
             <div className="token-card">
-              <div className="token-badge">
-                #{activeToken.token_number}
-              </div>
+              <h3 className="token-title">Your Active Token</h3>
+
+              <div className="token-badge">#{activeToken.token_number}</div>
 
               <h4 className="doctor-name">{activeToken.doctor}</h4>
 
@@ -169,17 +166,12 @@ const Dashboard = () => {
               <span className="status waiting">Waiting</span>
             </div>
           ) : (
-            <p className="no-token">No active token</p>
+            <div className="token-card">
+              <h3 className="token-title">Your Active Token</h3>
+              <p className="no-token">No active token</p>
+            </div>
           )}
         </div>
-
-        {/* REMINDER POPUP */}
-        {showReminder && (
-          <div className="reminder-popup">
-            ⏰ Your appointment is in 10 minutes. Please reach the venue.
-            <button onClick={() => setShowReminder(false)}>✕</button>
-          </div>
-        )}
       </div>
     </>
   );

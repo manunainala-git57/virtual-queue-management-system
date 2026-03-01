@@ -18,17 +18,28 @@ app.use("/auth", authRoutes);
 app.use("/employees", employeeRoutes);
 app.use("/tokens", tokenRoutes);
 app.use("/admin", adminRoutes);
-
+// DEBUG ROUTE — To check which database backend is using
+app.get("/debug", (req, res) => {
+  const db = require("./config/db");
+  
+  db.query("SELECT * FROM users", (err, rows) => {
+    if (err) return res.json({ error: err });
+    res.json(rows);
+  });
+});
 
 const PORT = process.env.PORT || 5000; // default to 5000 if .env missing
 
 
 const server = http.createServer(app);
 
+
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 

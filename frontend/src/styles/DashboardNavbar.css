@@ -1,54 +1,122 @@
 .dash-nav {
   width: 100%;
-  height: 70px;
   background: #ffffff;
+  padding: 12px 30px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 25px;
-  border-bottom: 1px solid #e2e8f0;
-  position: fixed;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: sticky;
   top: 0;
-  left: 0;
   z-index: 100;
 }
 
+/* LEFT SIDE */
 .nav-left {
   display: flex;
   align-items: center;
+  gap: 12px;
   cursor: pointer;
 }
 
 .nav-logo {
-  height: 42px;
-  width: 42px;
-  font-weight: 700;
-  object-fit: contain;
-  margin-right: 10px;
+  width: 34px;
+  height: 34px;
 }
 
 .nav-title {
   font-size: 22px;
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 600;
+  color: #1e293b;
 }
 
-.nav-right .logout-btn {
-  padding: 8px 16px;
-  background: #ef4444;
+/* RIGHT SIDE MENU */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Dashboard Button */
+.nav-dashboard {
+  background: none;
   border: none;
-  color: white;
+  font-size: 15px;
+  color: #475569;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav-dashboard:hover {
+  color: #1e293b;
+}
+
+/* USER BADGE */
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.user-name {
   font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.user-role {
+  font-size: 11px;
+  background: #dbeafe;
+  color: #2563eb;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 7px 16px;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s ease;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
-.nav-right .logout-btn:hover {
+.logout-btn:hover {
   background: #dc2626;
 }
 
-/* So dashboard content starts below navbar */
-.dashboard-page-content {
-  padding-top: 90px !important;
+.nav-login,
+.nav-signup {
+  font-size: 14px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav-login {
+  background: none;
+  border: 1px solid #94a3b8;
+  color: #334155;
+}
+
+.nav-login:hover {
+  background: #e2e8f0;
+}
+
+.nav-signup {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.nav-signup:hover {
+  background: #1d4ed8;
 }

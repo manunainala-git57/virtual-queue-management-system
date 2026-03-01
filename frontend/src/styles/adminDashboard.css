@@ -111,3 +111,10 @@
   padding: 6px 14px;
   border-radius: 12px;
 }
+
+/* Center align table text */
+.data-table th,
+.data-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}

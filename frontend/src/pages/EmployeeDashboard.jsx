@@ -3,7 +3,6 @@ import "../styles/employeeDashboard.css";
 import DashboardNavbar from "../components/DashboardNavbar";
 import socket from "../socket";
 
-
 const EmployeeDashboard = () => {
   const [stats, setStats] = useState({
     inQueue: 0,
@@ -17,98 +16,104 @@ const EmployeeDashboard = () => {
 
   const token = localStorage.getItem("token");
 
+  // Fetch employee queue
   const fetchQueue = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/tokens/employee", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  try {
+    const res = await fetch("http://localhost:5000/tokens/employee", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("token"),
+      },
+    });
 
-      const data = await res.json();
+    const data = await res.json();
+    console.log("EMP QUEUE RESPONSE:", data); // 🔥 IMPORTANT
 
-      if (res.ok && data.success) {
-        setQueue(data.queue);
+    if (res.ok) {
+      setQueue(data.queue || []);
 
-        if (data.stats) {
-          setStats({
-            inQueue: data.stats.inQueue,
-            servedToday: data.stats.servedToday,
-            avgServiceTime: data.stats.avgServiceTime,
-            totalToday: data.stats.totalToday,
-          });
-        }
+      if (data.stats) {
+        setStats({
+          inQueue: data.stats.inQueue,
+          servedToday: data.stats.servedToday,
+          avgServiceTime: data.stats.avgServiceTime,
+          totalToday: data.stats.totalToday,
+        });
       }
-
-    } catch (err) {
-      console.error(err);
     }
-  };
+  } catch (err) {
+    console.error("Queue Fetch Error:", err);
+  }
+};
 
+  useEffect(() => {
+    fetchQueue();
 
- 
-useEffect(() => {
-  fetchQueue();
+    socket.on("queueUpdated", fetchQueue);
 
-  socket.on("queueUpdated", fetchQueue);
+    return () => {
+      socket.off("queueUpdated", fetchQueue);
+    };
+  }, []);
 
-  return () => {
-    socket.off("queueUpdated", fetchQueue);
-  };
-}, []);
-
-  // SERVE NEXT
+  // SERVE NEXT TOKEN
   const serveNext = async () => {
     if (queue.length === 0) return;
 
     const next = queue[0];
-
     setLoading(true);
+
     try {
       const res = await fetch(
-        `http://localhost:5000/employee/next/${next.id}`,
-        { method: "PUT", headers: { Authorization: `Bearer ${token}` } }
+        `http://localhost:5000/tokens/${next.token_id}/serve`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       if (res.ok) fetchQueue();
     } catch (err) {
-      console.error(err);
+      console.error("Serve Next Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // SERVE SPECIFIC TOKEN
+  const serveToken = async (id) => {
+    setLoading(true);
 
- const serveToken = async (id) => {
-  setLoading(true);
-  try {
-    const res = await fetch(
-      `http://localhost:5000/tokens/${id}/serve`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    try {
+      const res = await fetch(
+        `http://localhost:5000/tokens/${id}/serve`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    if (res.ok) fetchQueue();
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      if (res.ok) fetchQueue();
+    } catch (err) {
+      console.error("Serve Token Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
-      {/* 🔹 Top Navbar */}
+      {/* NAVBAR */}
       <DashboardNavbar />
 
-      {/* MAIN PAGE CONTENT */}
       <div className="emp-dashboard-container dashboard-page-content">
-        {/* PAGE TITLE */}
-        <h1 className="page-title">Employee Dashboard</h1>
+        <h1 className="page-title">
+  {localStorage.getItem("specialization") || "Employee"} Dashboard
+</h1>
         <p className="page-subtitle">Manage your customer queue efficiently</p>
 
-        {/* TOP SUMMARY CARDS */}
+        {/* STAT CARDS */}
         <div className="stats-grid">
           <div className="stat-card">
             <h2>{stats.inQueue}</h2>
@@ -131,16 +136,16 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* CUSTOMER QUEUE TABLE */}
+        {/* QUEUE TABLE */}
         <div className="queue-card">
           <h2 className="queue-title">Customer Queue</h2>
           <p className="queue-subtitle">{queue.length} customers waiting</p>
 
           {queue.length > 0 && (
-              <div className="now-serving-banner">
-                Now Serving {queue[0].user_name}
-              </div>
-            )}
+            <div className="now-serving-banner">
+              Now Serving {queue[0].user_name}
+            </div>
+          )}
 
           <table className="queue-table">
             <thead>
@@ -174,6 +179,7 @@ useEffect(() => {
                     {index === 0 ? (
                       <button
                         className="serve-btn"
+                        disabled={loading}
                         onClick={() => serveToken(cust.token_id)}
                       >
                         Serve
@@ -187,12 +193,7 @@ useEffect(() => {
             </tbody>
           </table>
 
-          {/* SERVE NEXT BUTTON */}
-          {queue.length > 0 && (
-            <button className="serve-next-btn" onClick={serveNext}>
-              Serve Next
-            </button>
-          )}
+          
         </div>
       </div>
     </>

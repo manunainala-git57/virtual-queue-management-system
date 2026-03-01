@@ -94,6 +94,15 @@
   padding: 14px;
   font-size: 14px;
   border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle !important; /* Final alignment fix */
+}
+
+.queue-table tr {
+  transition: background 0.3s ease;
+}
+
+.queue-table tr:first-child {
+  background-color: #e8f5ff;
 }
 
 .token-col {
@@ -104,11 +113,9 @@
 
 /* BADGES */
 .badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
   color: white;
+  font-weight: 600;
+  border-radius: 12px;
 }
 
 .badge.next {
@@ -119,11 +126,9 @@
   background: #94a3b8;
 }
 
-/* ACTION BUTTON */
+/* SERVE BUTTON */
 .serve-btn {
   background: #10b981;
-  padding: 8px 16px;
-  border-radius: 8px;
   border: none;
   color: white;
   cursor: pointer;
@@ -134,6 +139,7 @@
   background: #059669;
 }
 
+/* SERVE NEXT BUTTON */
 .serve-next-btn {
   margin-top: 18px;
   padding: 12px 18px;
@@ -151,22 +157,40 @@
   background: #0369a1;
 }
 
+/* NOW SERVING BANNER */
 
-.queue-table tr {
-  transition: background 0.3s ease;
-}
-
-.queue-table tr:first-child {
-  background-color: #e8f5ff;
-}
 
 .now-serving-banner {
   background: linear-gradient(135deg, #4facfe, #00f2fe);
   color: white;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
   font-weight: 600;
-  margin: 15px 0;
-  text-align: center;
   font-size: 16px;
+  text-align: center;
+
+  width: 25%;               /* ⭐ reduce width */
+  margin: 15px auto;        /* ⭐ center it */
+}
+
+/* ⭐ FINAL FIX → MAKE NEXT & SERVE PERFECTLY ALIGNED */
+.queue-table .badge,
+.queue-table .serve-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  height: 40px !important;        /* SAME height */
+  padding: 0 22px !important;     /* SAME padding */
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+
+  border-radius: 12px !important; /* SAME rounded shape */
+  box-sizing: border-box !important;
+}
+
+/* Slightly lower the NEXT badge only */
+.badge.next {
+  margin-top: 13px;   /* adjust 1px–5px based on how much you want */
 }

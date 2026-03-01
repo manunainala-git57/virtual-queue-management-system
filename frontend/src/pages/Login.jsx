@@ -13,20 +13,23 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(""); 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.email || !form.password) {
-      alert("Please enter email and password");
+      setError("Please enter email and password");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
       const res = await fetch("http://localhost:5000/auth/login", {
@@ -36,21 +39,47 @@ const Login = () => {
       });
 
       const data = await res.json();
+      console.log("LOGIN API RESPONSE:", data);
 
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.user.role);
-
-        const role = data.user.role.toLowerCase();
-        if (role === "admin") navigate("/admin");
-        else if (role === "employee") navigate("/employee");
-        else navigate("/user");
-      } else {
-        alert(data.message || "Login failed");
+      if (!res.ok) {
+        setError(data.message || "Invalid email or password");
+        return;
       }
+
+      // Store basic user data
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("name", data.user.name);
+      localStorage.setItem("email", data.user.email);
+      localStorage.setItem("mobile", data.user.mobile);
+      localStorage.setItem("role", data.user.role);
+      localStorage.setItem("id", data.user.id);
+
+      // 🔥 SPECIALIZATION MAP
+      const doctorMap = {
+        2: "General Physician",
+        3: "Cardiologist",
+        4: "Dermatologist",
+        5: "Orthopedic",
+        6: "Pediatrician",
+      };
+
+      // 🔥 STORE SPECIALIZATION ONLY IF EMPLOYEE LOGS IN
+      if (data.user.role === "EMPLOYEE") {
+        const specialization = doctorMap[data.user.id] || "Employee";
+        localStorage.setItem("specialization", specialization);
+      } else {
+        localStorage.removeItem("specialization");
+      }
+
+      // Redirect based on role
+      const role = data.user.role.toLowerCase();
+      if (role === "admin") navigate("/admin");
+      else if (role === "employee") navigate("/employee");
+      else navigate("/user");
+
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      setError("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -83,7 +112,6 @@ const Login = () => {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 className="login-input"
-              
                 value={form.password}
                 onChange={handleChange}
                 required
@@ -96,6 +124,8 @@ const Login = () => {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
+
+            {error && <p className="error-text">{error}</p>}
           </div>
 
           <button className="login-btn" disabled={loading}>

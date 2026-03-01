@@ -118,3 +118,10 @@
 .password-toggle-icon:hover {
   color: #2563eb;
 }
+
+.error-text {
+  color: #e11d48; /* red */
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: left;
+}

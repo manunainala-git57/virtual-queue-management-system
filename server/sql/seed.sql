@@ -19,4 +19,3 @@ INSERT INTO employees (user_id, employee_name, avg_service_time) VALUES
 (4, 'Dermatologist', 8),
 (5, 'Orthopedic', 12),
 (6, 'Pediatrician', 7);
-
