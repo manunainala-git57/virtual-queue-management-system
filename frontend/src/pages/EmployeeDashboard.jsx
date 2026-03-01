@@ -47,39 +47,23 @@ const EmployeeDashboard = () => {
   }
 };
 
-  useEffect(() => {
+ 
+ 
+
+useEffect(() => {
+  fetchQueue();
+
+  socket.on("queueUpdated", () => {
+    console.log("Employee received update");
     fetchQueue();
+  });
 
-    socket.on("queueUpdated", fetchQueue);
-
-    return () => {
-      socket.off("queueUpdated", fetchQueue);
-    };
-  }, []);
-
-  // SERVE NEXT TOKEN
-  const serveNext = async () => {
-    if (queue.length === 0) return;
-
-    const next = queue[0];
-    setLoading(true);
-
-    try {
-      const res = await fetch(
-        `http://localhost:5000/tokens/${next.token_id}/serve`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (res.ok) fetchQueue();
-    } catch (err) {
-      console.error("Serve Next Error:", err);
-    } finally {
-      setLoading(false);
-    }
+  return () => {
+    socket.off("queueUpdated");
   };
+}, []);
+
+
 
   // SERVE SPECIFIC TOKEN
   const serveToken = async (id) => {
@@ -192,8 +176,6 @@ const EmployeeDashboard = () => {
               ))}
             </tbody>
           </table>
-
-          
         </div>
       </div>
     </>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "../styles/dashboard.css";
 import DashboardNavbar from "../components/DashboardNavbar";
+import socket from "../socket";
 
 const Dashboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -33,22 +34,23 @@ const Dashboard = () => {
     fetchDoctors();
   }, [token]);
 
-  useEffect(() => {
+
+
+
+useEffect(() => {
+  fetchMyToken();
+
+  socket.on("queueUpdated", () => {
+    console.log("User received update");
     fetchMyToken();
-  }, []);
+  });
 
-  const fetchMyToken = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/tokens/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-      if (res.ok && data.token) setActiveToken(data.token);
-    } catch (err) {
-      console.error(err);
-    }
+  return () => {
+    socket.off("queueUpdated");
   };
+}, []);
+
+
 
   const handleTakeToken = async () => {
     if (!selectedDoctor) return;
@@ -89,6 +91,44 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  const fetchMyToken = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/tokens/my", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      setActiveToken(data.token);
+    }else{
+      setActiveToken(null);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+  // Reminder popup
+  useEffect(() => {
+    if (activeToken) {
+      const mins = parseInt(activeToken.estimated_time);
+      if (mins <= 10) {
+        setShowReminder(true);
+      }else {
+      setShowReminder(false);
+    }
+    }
+    else {
+    // there is no active token, hide reminder
+    setShowReminder(false);
+  }
+
+  }, [activeToken]);
 
   return (
     <>

@@ -213,7 +213,7 @@ exports.serveToken = (req, res) => {
               return res.status(500).json({ message: "Server error" });
             }
 
-            // 🔥 EMIT WEBSOCKET EVENT (ONLY AFTER SUCCESS)
+            //EMIT WEBSOCKET EVENT (ONLY AFTER SUCCESS)
             const io = req.app.get("io");
             io.emit("queueUpdated", {
               employeeId: employeeId,
